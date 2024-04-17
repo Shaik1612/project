@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <a href="ant.html">Home Page</a>
+        <a href="ant.html">A*</a>
+        <a href="ant.html">Genetic</a>
+        <a href="ant.html">Ant</a>
+    </div>
+    <div class="content">
+        <canvas id="canvas" width="1500" height="800"></canvas>
+        <div class="controls">
+            <button class="btn" id="Start" onclick="startOptimization()">Start</button> 
+            <button class="btn" id="Reset" onclick="reset()">Reset</button>
+        </div>
+        <div id="information">
+            <label id="distance-label">Distance: <span id="distance-value">0</span> KM</label>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>

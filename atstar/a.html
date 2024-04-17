@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>A* Path Finding Algorithm</title>
+    <style>
+body {
+display: flex;
+flex-direction: column; 
+align-items: center; 
+justify-content: center; 
+height: 100%; 
+margin: 0; 
+}
+.header {
+width: 100%;
+height: 60px;
+background-color: black;
+color: white;
+padding: 10px 20px;
+text-align: center;
+
+}
+
+.header a {
+
+    color: white;
+    text-decoration: none;
+    margin-left: 5%;
+    margin-top: 10px;
+}
+.header a:hover {
+    text-decoration: underline;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+canvas {
+        margin-top: 100px;
+        border: 1px solid black;
+        margin-bottom: 10px;
+             }
+.buttons { 
+     display: flex; gap: 10px;
+         }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="a.html">Home Page</a>
+        <a href="a.html">A*</a>
+        <a href="a.html">Genetic</a>
+        <a href="a.html">Ant</a>
+    </div>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div class="buttons">
+        <button id="btnStart">Start Algorithm</button>
+        <button id="btnReset">Reset Grid</button>
+        <div class="heuristic-selection">
+            <label for="heuristic">Heuristic: </label>
+            <select id="heuristic">
+                <option value="manhattan">Manhattan</option>
+                <option value="euclidean">Euclidean</option>
+            </select>
+        </div>
+        
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const rows = 20;
+        const cols = 20;
+        const grid = [];
+        const openSet = [];
+        const closedSet = [];
+        const cellWidth = canvas.width / cols;
+        const cellHeight = canvas.height / rows;
+        let start, end;
+        let isRunning = false;
+        let mouseIsPressed = false;
+        let setStart = true, setEnd = true;
+
+        class Cell {
+            constructor(row, col) {
+                this.row = row;
+                this.col = col;
+                this.isStart = false;
+                this.isEnd = false;
+                this.isWall = false;
+                this.neighbors = [];
+                this.prev = null;
+                this.g = 0;
+                this.h = 0;
+                this.f = 0;
+                this._color = null; 
+            }
+
+            get color() {
+                return this._color;
+            }
+
+            set color(value) {
+                this._color = value;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.rect(this.col * cellWidth, this.row * cellHeight, cellWidth, cellHeight);
+                ctx.fillStyle = this.color || (this.isWall ? 'black' : this.isStart ? 'orange' : this.isEnd ? 'turquoise' : 'white');
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            addNeighbors(grid) {
+                let row = this.row;
+                let col = this.col;
+                if (row > 0) this.neighbors.push(grid[row - 1][col]);
+                if (row < rows - 1) this.neighbors.push(grid[row + 1][col]);
+                if (col > 0) this.neighbors.push(grid[row][col - 1]);
+                if (col < cols - 1) this.neighbors.push(grid[row][col + 1]);
+            }
+        }
+
+        function heuristic(a, b) {
+    const heuristicType = document.getElementById('heuristic').value;
+    if (heuristicType === 'manhattan') {
+        return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+    } else { // Euclidean
+        return Math.sqrt(Math.pow(a.row - b.row, 2) + Math.pow(a.col - b.col, 2));
+    }
+}
+
+
+        function initializeGrid() {
+            for (let row = 0; row < rows; row++) {
+                const currentRow = [];
+                for (let col = 0; col < cols; col++) {
+                    const cell = new Cell(row, col);
+                    currentRow.push(cell);
+                }
+                grid.push(currentRow);
+            }
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    grid[row][col].addNeighbors(grid);
+                }
+            }
+        }
+
+        function drawGrid() {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    grid[row][col].draw();
+                }
+            }
+        }
+
+        
+        canvas.addEventListener('mousedown', (e) => {
+            mouseIsPressed = true;
+            const { row, col } = getMousePos(canvas, e);
+            if (setStart) {
+                if (start) start.isStart = false;
+                grid[row][col].isStart = true;
+                start = grid[row][col];
+                setStart = false;
+            } else if (setEnd) {
+                if (end) end.isEnd = false;
+                grid[row][col].isEnd = true;
+                end = grid[row][col];
+                setEnd = false;
+            } else {
+                grid[row][col].isWall = !grid[row][col].isWall;
+            }
+            drawGrid();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            mouseIsPressed = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!mouseIsPressed || isRunning || setStart  || setEnd) return;
+            const { row, col } = getMousePos(canvas, e);
+            if (!grid[row][col].isStart && !grid[row][col].isEnd) {
+                grid[row][col].isWall = true;
+                drawGrid();
+            }
+        });
+
+        function getMousePos(canvas, event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const row = Math.floor(y / cellHeight);
+            const col = Math.floor(x / cellWidth);
+            return { row, col };
+        }
+
+        // A* Algorithm
+        async function aStar() {
+            if (!start || !end) {
+                alert("Please set both start and end points.");
+                return;
+            }
+            
+            openSet.push(start);
+
+            while (openSet.length > 0) {
+                let lowestIndex = 0;
+                for (let i = 0; i < openSet.length; i++) {
+                    if (openSet[i].f < openSet[lowestIndex].f) {
+                        lowestIndex = i;
+                    }
+                }
+
+                let current = openSet[lowestIndex];
+
+                if (current === end) {
+                    reconstructPath();
+                    return;
+                }
+
+                openSet.splice(lowestIndex, 1);
+                closedSet.push(current);
+
+                let neighbors = current.neighbors;
+                for (let neighbor of neighbors) {
+                    if (closedSet.includes(neighbor) || neighbor.isWall) continue;
+
+                    let tempG = current.g + 1;
+
+                    let newPath = false;
+                    if (!openSet.includes(neighbor)) {
+                        newPath = true;
+                        neighbor.g = tempG;
+                        openSet.push(neighbor);
+                    } else if (tempG < neighbor.g) {
+                        newPath = true;
+                        neighbor.g = tempG;
+                    }
+
+                    if (newPath) {
+                        neighbor.h = heuristic(neighbor, end);
+                        neighbor.f = neighbor.g + neighbor.h;
+                        neighbor.prev = current;
+                    }
+                }
+            }
+
+           
+            alert("No path found.");
+        }
+
+        function reconstructPath() {
+            let temp = end;
+            let path = [];
+            while (temp.prev) {
+                path.push(temp.prev);
+                temp = temp.prev;
+            }
+
+            for (let cell of path) {
+                cell.color = 'purple';
+            }
+            start.color = 'orange';
+            end.color = 'turquoise';
+            drawGrid();
+        }
+
+        document.getElementById('btnStart').onclick = function() {
+            if (isRunning) return;
+            isRunning = true;
+            aStar().then(() => {
+                isRunning = false;
+            });
+        };
+
+        document.getElementById('btnReset').onclick = function() {
+            location.reload();
+        };
+
+        function initialize() {
+         
+            for (let row = 0; row < rows; row++) {
+                let currentRow = [];
+                for (let col = 0; col < cols; col++) {
+                    let cell = new Cell(row, col);
+                    currentRow.push(cell);
+                }
+                grid.push(currentRow);
+            }
+
+            // Add neighbors
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    grid[row][col].addNeighbors(grid);
+                }
+            }
+
+            // Define start and end spots
+            start = grid[0][0];
+            end = grid[rows - 1][cols - 1];
+            start.isWall = false;
+            end.isWall = false;
+
+            openSet.push(start);
+
+          
+            document.getElementById('btnStart').addEventListener('click', () => {
+                requestAnimationFrame(animate);
+            });
+
+           
+            document.getElementById('btnReset').addEventListener('click', resetGrid);
+        }
+
+        function resetGrid() {
+            location.reload();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            aStar();
+            drawGrid();
+        }
+
+        initializeGrid();
+        drawGrid();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,58 @@
+
+
+body {
+ 
+    margin: 0;
+    background: url('https://t3.ftcdn.net/jpg/02/19/90/70/360_F_219907015_Uls9Q9u9el5CzyxIcGLmrSfuzWKaZEWt.jpg') no-repeat center center fixed; 
+    background-repeat: no-repeat;
+    background-size: 85%;
+    background-position: center;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    
+   
+}
+.header {
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.header a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+}
+
+.header a:hover {
+    text-decoration: underline;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+
+.head, .settings-bar {
+    background-color: rgba(255, 255, 255, 0.8); 
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.button, #start-button, #clear-button {
+    background-color: #4CAF50; 
+    color: white;
+    padding: 15px 32px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.button:hover, #start-button:hover, #clear-button:hover {
+    background-color: #45a049;
+}
+

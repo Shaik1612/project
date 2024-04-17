@@ -1,0 +1,74 @@
+body, html {
+    margin: 0;
+    background-image: url('https://media.istockphoto.com/id/1197369584/vector/detailed-world-map-with-countries.jpg?s=612x612&w=0&k=20&c=pW9R8Os-vNEZc1-TKLgHhva-e-OL277-peZdPJKT6Qg=');
+    background-repeat: no-repeat;
+    background-size: 85%;
+    background-position: center;
+    height: 100%;
+   
+}
+.header {
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.header a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+}
+
+.header a:hover {
+    text-decoration: underline;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn {
+    background-color: #555; 
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn:hover {
+    background-color: #6c757d; 
+}
+
+#information {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#distance-label {
+    color: #444;
+    font-size: 1.25em;
+}
+
+#distance-value {
+    font-weight: bold;
+}
